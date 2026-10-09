@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '../components/ui/table';
 import { Badge } from '../components/ui/badge';
+import { PageHeader } from '../components/PageHeader';
 import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
 import { AlertTriangle, TrendingUp } from 'lucide-react';
 import {
@@ -42,12 +43,11 @@ export function Predictions() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Alerte prédictive de rupture</h1>
-        <p className="text-gray-500 mt-1">
-          Point de commande dynamique calculé à partir de la consommation récente
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Prévisionnel"
+        title="Alerte prédictive de rupture"
+        subtitle="Point de commande dynamique calculé à partir de la consommation récente"
+      />
 
       <Card className="mb-6">
         <CardContent className="p-6">

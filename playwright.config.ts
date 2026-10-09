@@ -12,7 +12,10 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:5173',
+    // On chauffe le module d'entrée : cela déclenche l'optimisation des
+    // dépendances Vite avant le lancement des tests (évite les ERR_ABORTED
+    // au premier chargement parallèle).
+    url: 'http://localhost:5173/src/main.tsx',
     reuseExistingServer: true,
     timeout: 120_000,
     env: {

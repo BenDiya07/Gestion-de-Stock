@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '../components/PageHeader';
 import { useStore } from '../context/StoreContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -71,10 +72,11 @@ export function History() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Historique des Actions</h1>
-        <p className="text-gray-500 mt-1">Suivez toutes les modifications du système</p>
-      </div>
+      <PageHeader
+        eyebrow="Audit"
+        title="Historique des Actions"
+        subtitle="Suivez toutes les modifications du système"
+      />
 
       <Card>
         <CardHeader>

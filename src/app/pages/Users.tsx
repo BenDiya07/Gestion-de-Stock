@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '../components/PageHeader';
 import { useStore } from '../context/StoreContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -128,17 +129,18 @@ export function Users() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestion des Utilisateurs</h1>
-        <p className="text-gray-500 mt-1">Gérez les accès et les rôles</p>
-      </div>
+      <PageHeader
+        eyebrow="Équipe"
+        title="Gestion des Utilisateurs"
+        subtitle="Gérez les accès et les rôles"
+      />
 
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Liste des Utilisateurs</CardTitle>
             {isAdmin && (
-              <Button onClick={() => handleOpenDialog()}>
+              <Button variant="brand" onClick={() => handleOpenDialog()}>
                 <Plus className="w-4 h-4 mr-2" />
                 Ajouter un Utilisateur
               </Button>
