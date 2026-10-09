@@ -18,4 +18,6 @@ export const queryKeys = {
   clients: ['clients'] as const,
   users: ['users'] as const,
   history: ['history'] as const,
+  stores: ['stores'] as const,
+  storeStock: ['storeStock'] as const,
 };

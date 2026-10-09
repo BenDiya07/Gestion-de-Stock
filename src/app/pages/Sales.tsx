@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 import type { Sale } from '../types';
 
 export function Sales() {
-  const { sales, products, addSale, currentUser } = useStore();
+  const { sales, products, addSale, currentUser, stores, stockByStore } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<Sale>>({
@@ -37,17 +37,45 @@ export function Sales() {
     status: 'completed',
   });
 
+  const storeName = (storeId?: string) =>
+    stores.find((s) => s.id === storeId)?.name ?? '—';
+
+  const storeStock = (storeId: string, productId: string) =>
+    stockByStore.find((s) => s.storeId === storeId && s.productId === productId)?.quantity ?? 0;
+
+  const selectedStoreId = formData.storeId ?? '';
+
+  const handleStoreChange = (storeId: string) => {
+    setFormData((prev) => {
+      const product = products.find((p) => p.id === (prev.productId ?? ''));
+      const available = storeStock(storeId, prev.productId ?? '');
+      if (product && (prev.quantity ?? 0) > available) {
+        toast.error('Stock insuffisant', {
+          description: `Seulement ${available} unité(s) dans cette boutique.`,
+        });
+      }
+      return { ...prev, storeId };
+    });
+  };
+
+  const currentAvailable = selectedStoreId
+    ? storeStock(selectedStoreId, formData.productId ?? '')
+    : 0;
+
   const filteredSales = sales.filter((sale) => {
     const product = products.find((p) => p.id === sale.productId);
     const searchLower = searchTerm.toLowerCase();
     
     return (
       product?.name.toLowerCase().includes(searchLower) ||
-      sale.customerName?.toLowerCase().includes(searchLower)
+      sale.customerName?.toLowerCase().includes(searchLower) ||
+      storeName(sale.storeId).toLowerCase().includes(searchLower)
     );
   });
 
   const handleOpenDialog = () => {
+    const defaultStore =
+      stores.find((s) => s.isDispatchCenter) ?? stores[0];
     setFormData({
       productId: products[0]?.id || '',
       quantity: 1,
@@ -55,26 +83,41 @@ export function Sales() {
       totalPrice: products[0]?.price || 0,
       customerName: '',
       status: 'completed',
+      storeId: defaultStore?.id,
     });
     setIsDialogOpen(true);
   };
 
   const handleProductChange = (productId: string) => {
     const product = products.find((p) => p.id === productId);
-    setFormData({
-      ...formData,
-      productId,
-      unitPrice: product?.price || 0,
-      totalPrice: (product?.price || 0) * (formData.quantity || 0),
+    setFormData((prev) => {
+      const available = storeStock(prev.storeId ?? '', productId);
+      const prevQuantity = prev.quantity ?? 0;
+      if (prev.storeId && prevQuantity > available) {
+        toast.error('Stock insuffisant', {
+          description: `Seulement ${available} unité(s) dans cette boutique.`,
+        });
+      }
+      const quantity = prev.storeId && prevQuantity > available ? 0 : prevQuantity;
+      return {
+        ...prev,
+        productId,
+        unitPrice: product?.price || 0,
+        quantity,
+        totalPrice: (product?.price || 0) * quantity,
+      };
     });
   };
 
   const handleQuantityChange = (quantity: number) => {
-    const product = products.find((p) => p.id === formData.productId);
-    
-    if (product && quantity > product.stock) {
+    const product = products.find((p) => p.id === (formData.productId ?? ''));
+    const max = selectedStoreId
+      ? storeStock(selectedStoreId, formData.productId ?? '')
+      : product?.stock ?? 0;
+
+    if (quantity > max) {
       toast.error('Stock insuffisant', {
-        description: `Seulement ${product.stock} unité(s) disponible(s).`,
+        description: `Seulement ${max} unité(s) disponible(s).`,
       });
       return;
     }
@@ -96,9 +139,13 @@ export function Sales() {
       return;
     }
 
-    if ((formData.quantity || 0) > product.stock) {
+    const max = selectedStoreId
+      ? storeStock(selectedStoreId, formData.productId ?? '')
+      : product.stock;
+
+    if ((formData.quantity || 0) > max) {
       toast.error('Stock insuffisant', {
-        description: `Seulement ${product.stock} unité(s) disponible(s).`,
+        description: `Seulement ${max} unité(s) disponible(s).`,
       });
       return;
     }
@@ -146,7 +193,7 @@ export function Sales() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Total des Ventes</p>
-                <p className="text-2xl font-bold text-gray-900">{totalSales.toFixed(2)} €</p>
+                <p className="text-2xl font-bold text-gray-900">{totalSales.toFixed(2)} $</p>
               </div>
             </div>
           </CardContent>
@@ -209,6 +256,7 @@ export function Sales() {
                 <TableRow>
                   <TableHead>Date</TableHead>
                   <TableHead>Produit</TableHead>
+                  <TableHead>Boutique</TableHead>
                   <TableHead>Client</TableHead>
                   <TableHead>Quantité</TableHead>
                   <TableHead>Prix Unit.</TableHead>
@@ -219,7 +267,7 @@ export function Sales() {
               <TableBody>
                 {filteredSales.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-gray-500">
+                    <TableCell colSpan={8} className="text-center text-gray-500">
                       Aucune vente trouvée
                     </TableCell>
                   </TableRow>
@@ -246,11 +294,12 @@ export function Sales() {
                               <p className="text-sm text-gray-500">{product?.sku}</p>
                             </div>
                           </TableCell>
+                          <TableCell>{storeName(sale.storeId)}</TableCell>
                           <TableCell>{sale.customerName || 'N/A'}</TableCell>
                           <TableCell>{sale.quantity}</TableCell>
-                          <TableCell>{sale.unitPrice.toFixed(2)} €</TableCell>
+                          <TableCell>{sale.unitPrice.toFixed(2)} $</TableCell>
                           <TableCell className="font-semibold text-green-600">
-                            {sale.totalPrice.toFixed(2)} €
+                            {sale.totalPrice.toFixed(2)} $
                           </TableCell>
                           <TableCell>{getStatusBadge(sale.status)}</TableCell>
                         </TableRow>
@@ -272,6 +321,25 @@ export function Sales() {
           <form onSubmit={handleSubmit}>
             <div className="space-y-4 py-4">
               <div>
+                <Label htmlFor="storeId">Boutique *</Label>
+                <select
+                  id="storeId"
+                  value={formData.storeId ?? ''}
+                  onChange={(e) => handleStoreChange(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  required
+                >
+                  <option value="">Sélectionner une boutique</option>
+                  {stores.map((store) => (
+                    <option key={store.id} value={store.id}>
+                      {store.name}
+                      {store.isDispatchCenter ? ' (Dépôt)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <Label htmlFor="productId">Produit *</Label>
                 <select
                   id="productId"
@@ -282,10 +350,16 @@ export function Sales() {
                 >
                   <option value="">Sélectionner un produit</option>
                   {products
-                    .filter((p) => p.stock > 0)
+                    .filter((p) =>
+                      selectedStoreId ? storeStock(selectedStoreId, p.id) > 0 : p.stock > 0
+                    )
                     .map((product) => (
                       <option key={product.id} value={product.id}>
-                        {product.name} - Stock: {product.stock} - {product.price.toFixed(2)} €
+                        {product.name} - Stock:{' '}
+                        {selectedStoreId
+                          ? storeStock(selectedStoreId, product.id)
+                          : product.stock}{' '}
+                        - {product.price.toFixed(2)} $
                       </option>
                     ))}
                 </select>
@@ -296,7 +370,10 @@ export function Sales() {
                   <p className="text-sm text-blue-700">
                     Stock disponible:{' '}
                     <span className="font-semibold">
-                      {products.find((p) => p.id === formData.productId)?.stock || 0} unité(s)
+                      {selectedStoreId
+                        ? currentAvailable
+                        : products.find((p) => p.id === formData.productId)?.stock || 0}{' '}
+                      unité(s)
                     </span>
                   </p>
                 </div>
@@ -315,7 +392,7 @@ export function Sales() {
               </div>
 
               <div>
-                <Label htmlFor="unitPrice">Prix unitaire (€) *</Label>
+                <Label htmlFor="unitPrice">Prix unitaire ($) *</Label>
                 <Input
                   id="unitPrice"
                   type="number"
@@ -335,7 +412,7 @@ export function Sales() {
               <div>
                 <Label>Prix total</Label>
                 <div className="text-2xl font-bold text-green-600">
-                  {formData.totalPrice?.toFixed(2) || '0.00'} €
+                  {formData.totalPrice?.toFixed(2) || '0.00'} $
                 </div>
               </div>
 

@@ -28,8 +28,8 @@ export function Login() {
     <div className="flex h-screen items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>GestiStock Pro</CardTitle>
-          <p className="text-sm text-gray-500">Connectez-vous à votre espace</p>
+          <CardTitle>Merkey</CardTitle>
+          <p className="text-sm text-gray-500">Connectez-vous à votre espace de gestion</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -179,7 +179,7 @@ export function Products() {
                         <TableCell>
                           <Badge variant="outline">{product.category}</Badge>
                         </TableCell>
-                        <TableCell>{product.price.toFixed(2)} €</TableCell>
+                        <TableCell>{product.price.toFixed(2)} $</TableCell>
                         <TableCell>
                           <span
                             className={
@@ -273,7 +273,7 @@ export function Products() {
               </div>
 
               <div>
-                <Label htmlFor="price">Prix de vente (€) *</Label>
+                <Label htmlFor="price">Prix de vente ($) *</Label>
                 <Input
                   id="price"
                   type="number"
@@ -287,7 +287,7 @@ export function Products() {
               </div>
 
               <div>
-                <Label htmlFor="cost">Coût d'achat (€) *</Label>
+                <Label htmlFor="cost">Coût d'achat ($) *</Label>
                 <Input
                   id="cost"
                   type="number"

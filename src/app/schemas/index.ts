@@ -20,6 +20,21 @@ export const productSchema = z.object({
 });
 export type ProductInput = z.infer<typeof productSchema>;
 
+export const storeSchema = z.object({
+  name: z.string().trim().min(1, 'Le nom est requis'),
+  city: z.string().trim().min(1, 'La ville est requise'),
+  address: z.string().optional(),
+  isDispatchCenter: z.boolean().default(false),
+  status: z.enum(['active', 'inactive']).default('active'),
+});
+export type StoreInput = z.infer<typeof storeSchema>;
+
+export const transferSchema = z.object({
+  productId: z.string().uuid('Produit invalide'),
+  quantity: z.coerce.number().int().positive('Quantité invalide'),
+});
+export type TransferInput = z.infer<typeof transferSchema>;
+
 export const supplierSchema = z.object({
   name: z.string().trim().min(1, 'Le nom est requis'),
   contact: z.string().trim().min(1, 'Le contact est requis'),
@@ -44,6 +59,7 @@ export const saleSchema = z.object({
   quantity: z.coerce.number().int().positive('Quantité invalide'),
   unitPrice: z.coerce.number().nonnegative('Prix invalide'),
   customerName: z.string().optional(),
+  storeId: z.string().uuid('Boutique invalide').optional(),
   status: z.enum(['completed', 'pending', 'cancelled']).default('completed'),
 });
 export type SaleInput = z.infer<typeof saleSchema>;

@@ -1,4 +1,4 @@
-import type { Product, Supplier, Supply, Sale, User, Client } from '../types';
+import type { Product, Supplier, Supply, Sale, User, Client, Store, StoreStock } from '../types';
 
 /** Jeu de données de démonstration (mode sans Supabase configuré). */
 
@@ -231,4 +231,45 @@ export const mockClients: Client[] = [
     createdAt: new Date('2024-02-10'),
     totalPurchases: 0,
   },
+];
+
+export const mockStores: Store[] = [
+  {
+    id: 's1',
+    name: 'Dépôt central — Kinshasa',
+    city: 'Kinshasa',
+    address: 'Boulevard Lumumba, Limete',
+    isDispatchCenter: true,
+    status: 'active',
+    createdAt: new Date('2024-01-01'),
+  },
+  {
+    id: 's2',
+    name: 'Merkey Kinshasa — Centre',
+    city: 'Kinshasa',
+    address: 'Boulevard du 30 Juin, Gombe',
+    isDispatchCenter: false,
+    status: 'active',
+    createdAt: new Date('2024-01-01'),
+  },
+  {
+    id: 's3',
+    name: 'Merkey Lubumbashi',
+    city: 'Lubumbashi',
+    address: 'Avenue Lumumba, Quartier du Golf',
+    isDispatchCenter: false,
+    status: 'active',
+    createdAt: new Date('2024-01-01'),
+  },
+];
+
+export const mockStockByStore: StoreStock[] = [
+  { storeId: 's1', storeName: 'Dépôt central — Kinshasa', storeCity: 'Kinshasa', isDispatchCenter: true, productId: '1', productSku: 'DELL-LAP-001', productName: 'Ordinateur Portable Dell', quantity: 8 },
+  { storeId: 's1', storeName: 'Dépôt central — Kinshasa', storeCity: 'Kinshasa', isDispatchCenter: true, productId: '2', productSku: 'LOG-MOU-001', productName: 'Souris Sans Fil Logitech', quantity: 20 },
+  { storeId: 's1', storeName: 'Dépôt central — Kinshasa', storeCity: 'Kinshasa', isDispatchCenter: true, productId: '3', productSku: 'KEY-RGB-001', productName: 'Clavier Mécanique RGB', quantity: 18 },
+  { storeId: 's1', storeName: 'Dépôt central — Kinshasa', storeCity: 'Kinshasa', isDispatchCenter: true, productId: '4', productSku: 'MON-4K-001', productName: 'Écran 27 pouces 4K', quantity: 12 },
+  { storeId: 's2', storeName: 'Merkey Kinshasa — Centre', storeCity: 'Kinshasa', isDispatchCenter: false, productId: '1', productSku: 'DELL-LAP-001', productName: 'Ordinateur Portable Dell', quantity: 1 },
+  { storeId: 's2', storeName: 'Merkey Kinshasa — Centre', storeCity: 'Kinshasa', isDispatchCenter: false, productId: '2', productSku: 'LOG-MOU-001', productName: 'Souris Sans Fil Logitech', quantity: 2 },
+  { storeId: 's2', storeName: 'Merkey Kinshasa — Centre', storeCity: 'Kinshasa', isDispatchCenter: false, productId: '3', productSku: 'KEY-RGB-001', productName: 'Clavier Mécanique RGB', quantity: 1 },
+  { storeId: 's3', storeName: 'Merkey Lubumbashi', storeCity: 'Lubumbashi', isDispatchCenter: false, productId: '4', productSku: 'MON-4K-001', productName: 'Écran 27 pouces 4K', quantity: 0 },
 ];

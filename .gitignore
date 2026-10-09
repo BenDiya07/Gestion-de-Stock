@@ -15,6 +15,12 @@ coverage/
 .env.local
 .env.*.local
 
+# Vercel (config projet liée au compte local)
+.vercel/
+
+# Supabase CLI (lien local vers le projet)
+supabase/.temp/
+
 # Logs
 *.log
 npm-debug.log*

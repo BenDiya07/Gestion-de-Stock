@@ -6,8 +6,17 @@ import type {
   Sale,
   User,
   Client,
+  Store,
+  StoreStock,
   HistoryEntry,
 } from '../types';
+
+export interface TransferStockInput {
+  productId: string;
+  quantity: number;
+  fromStoreId: string;
+  toStoreId: string;
+}
 
 export interface StoreContextType {
   products: Product[];
@@ -16,6 +25,8 @@ export interface StoreContextType {
   sales: Sale[];
   users: User[];
   clients: Client[];
+  stores: Store[];
+  stockByStore: StoreStock[];
   history: HistoryEntry[];
   currentUser: User;
   isDemoMode: boolean;
@@ -41,6 +52,11 @@ export interface StoreContextType {
   addClient: (client: Omit<Client, 'id' | 'createdAt' | 'totalPurchases'>) => void;
   updateClient: (id: string, client: Partial<Client>) => void;
   deleteClient: (id: string) => void;
+
+  addStore: (store: Omit<Store, 'id' | 'createdAt'>) => void;
+  updateStore: (id: string, store: Partial<Store>) => void;
+  deleteStore: (id: string) => void;
+  transferStock: (input: TransferStockInput) => void;
 }
 
 export const StoreContext = createContext<StoreContextType | undefined>(undefined);

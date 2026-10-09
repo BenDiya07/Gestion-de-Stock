@@ -93,14 +93,29 @@ export async function deleteProduct(id: string): Promise<void> {
   if (error) throw error;
 }
 
-/** Ajustement manuel de stock (mouvement d'inventaire). */
+/** Ajustement manuel de stock (mouvement d'inventaire sur le dépôt central). */
+async function dispatchCenterId(): Promise<string> {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from('stores')
+    .select('id')
+    .eq('is_dispatch_center', true)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  if (data?.id) return data.id as string;
+  const { data: first } = await supabase.from('stores').select('id').limit(1).maybeSingle();
+  if (first?.id) return first.id as string;
+  throw new Error('Aucune boutique : créez d’abord un dépôt.');
+}
+
 export async function adjustStock(productId: string, delta: number, note?: string): Promise<void> {
   const { error } = await requireSupabase().from('stock_movements').insert({
     product_id: productId,
+    store_id: await dispatchCenterId(),
     quantity: delta,
     reason: 'adjustment',
     created_by: await currentUserId(),
-    // note conservée dans l'audit via trigger applicatif si besoin
   });
   if (error) throw error;
 }

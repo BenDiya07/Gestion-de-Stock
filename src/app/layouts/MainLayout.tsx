@@ -11,6 +11,7 @@ import {
   LogOut,
   AlertTriangle,
   UserCircle,
+  Store,
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { Badge } from '../components/ui/badge';
@@ -22,6 +23,7 @@ const menuItems = [
   { path: '/suppliers', icon: Building2, label: 'Fournisseurs' },
   { path: '/supplies', icon: Truck, label: 'Approvisionnements' },
   { path: '/sales', icon: ShoppingCart, label: 'Ventes' },
+  { path: '/stores', icon: Store, label: 'Boutiques' },
   { path: '/clients', icon: UserCircle, label: 'Clients' },
   { path: '/users', icon: Users, label: 'Utilisateurs' },
   { path: '/history', icon: History, label: 'Historique' },
@@ -38,8 +40,8 @@ export function MainLayout() {
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-6 border-b border-gray-200">
-          <h1 className="font-bold text-xl text-gray-900">GestiStock Pro</h1>
-          <p className="text-sm text-gray-500 mt-1">Gestion de magasin</p>
+          <h1 className="font-bold text-xl text-gray-900">Merkey</h1>
+          <p className="text-sm text-gray-500 mt-1">Lunetterie — Kinshasa</p>
         </div>
 
         <nav className="flex-1 p-4 space-y-1">

@@ -13,6 +13,7 @@ export function mapSale(row: SaleRow): Sale {
     date: new Date(row.created_at),
     customerId: row.client_id ?? undefined,
     customerName: row.customer_name ?? undefined,
+    storeId: row.store_id ?? undefined,
     status: row.status,
   };
 }
@@ -42,6 +43,7 @@ export async function createSale(input: SaleInput): Promise<void> {
   const values = saleSchema.parse(input);
   const { error } = await requireSupabase().from('sales').insert({
     product_id: values.productId,
+    store_id: values.storeId || null,
     quantity: values.quantity,
     unit_price: values.unitPrice,
     customer_name: values.customerName || null,

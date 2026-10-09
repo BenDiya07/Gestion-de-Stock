@@ -195,9 +195,9 @@ export function Supplies() {
                           </TableCell>
                           <TableCell>{supplier?.name}</TableCell>
                           <TableCell>{supply.quantity}</TableCell>
-                          <TableCell>{supply.cost.toFixed(2)} €</TableCell>
+                          <TableCell>{supply.cost.toFixed(2)} $</TableCell>
                           <TableCell className="font-semibold">
-                            {supply.totalCost.toFixed(2)} €
+                            {supply.totalCost.toFixed(2)} $
                           </TableCell>
                           <TableCell>{getStatusBadge(supply.status)}</TableCell>
                           {isAdmin && (
@@ -281,7 +281,7 @@ export function Supplies() {
                         .filter((s) => s.status === 'received')
                         .reduce((sum, s) => sum + s.totalCost, 0)
                         .toFixed(2)}{' '}
-                      €
+                      $
                     </p>
                   </div>
                 </div>
@@ -347,7 +347,7 @@ export function Supplies() {
               </div>
 
               <div>
-                <Label htmlFor="cost">Coût unitaire (€) *</Label>
+                <Label htmlFor="cost">Coût unitaire ($) *</Label>
                 <Input
                   id="cost"
                   type="number"
@@ -367,7 +367,7 @@ export function Supplies() {
               <div>
                 <Label>Coût total</Label>
                 <div className="text-2xl font-bold text-blue-600">
-                  {formData.totalCost?.toFixed(2) || '0.00'} €
+                  {formData.totalCost?.toFixed(2) || '0.00'} $
                 </div>
               </div>
 

@@ -33,7 +33,7 @@ export function Dashboard() {
     },
     {
       title: 'Ventes du Mois',
-      value: `${totalSalesValue.toFixed(2)} €`,
+      value: `${totalSalesValue.toFixed(2)} $`,
       icon: DollarSign,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
@@ -158,7 +158,7 @@ export function Dashboard() {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-green-600">
-                          {sale.totalPrice.toFixed(2)} €
+                          {sale.totalPrice.toFixed(2)} $
                         </p>
                         <p className="text-xs text-gray-500">
                           {new Date(sale.date).toLocaleDateString('fr-FR')}
@@ -220,7 +220,7 @@ export function Dashboard() {
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span className="text-gray-700">Valeur totale du stock</span>
                 <span className="font-bold text-gray-900">
-                  {products.reduce((sum, p) => sum + p.cost * p.stock, 0).toFixed(2)} €
+                  {products.reduce((sum, p) => sum + p.cost * p.stock, 0).toFixed(2)} $
                 </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
@@ -230,7 +230,7 @@ export function Dashboard() {
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <span className="text-gray-700">Marge potentielle</span>
                 <span className="font-bold text-green-600">
-                  {products.reduce((sum, p) => sum + (p.price - p.cost) * p.stock, 0).toFixed(2)} €
+                  {products.reduce((sum, p) => sum + (p.price - p.cost) * p.stock, 0).toFixed(2)} $
                 </span>
               </div>
             </div>

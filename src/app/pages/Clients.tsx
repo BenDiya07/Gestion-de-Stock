@@ -208,7 +208,7 @@ export function Clients() {
               <div>
                 <p className="text-sm text-gray-500">Total Achats</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {clients.reduce((sum, c) => sum + c.totalPurchases, 0).toFixed(2)} €
+                  {clients.reduce((sum, c) => sum + c.totalPurchases, 0).toFixed(2)} $
                 </p>
               </div>
             </div>
@@ -311,7 +311,7 @@ export function Clients() {
                           <div className="flex justify-between text-sm mb-2">
                             <span className="text-gray-500">Total achats:</span>
                             <span className="font-semibold text-green-600">
-                              {client.totalPurchases.toFixed(2)} €
+                              {client.totalPurchases.toFixed(2)} $
                             </span>
                           </div>
                           <div className="flex justify-between text-sm">
@@ -392,7 +392,7 @@ export function Clients() {
                         <TableCell>{client.city}</TableCell>
                         <TableCell>{getTypeBadge(client.type)}</TableCell>
                         <TableCell className="font-semibold text-green-600">
-                          {client.totalPurchases.toFixed(2)} €
+                          {client.totalPurchases.toFixed(2)} $
                         </TableCell>
                         <TableCell>{getStatusBadge(client.status)}</TableCell>
                         {isAdmin && (

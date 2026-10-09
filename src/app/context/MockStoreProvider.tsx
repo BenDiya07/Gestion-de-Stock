@@ -1,10 +1,22 @@
 import { useState, type ReactNode } from 'react';
-import { StoreContext, type StoreContextType } from './store';
-import type { Product, Supplier, Supply, Sale, User, Client, HistoryEntry } from '../types';
+import { StoreContext, type StoreContextType, type TransferStockInput } from './store';
+import type {
+  Product,
+  Supplier,
+  Supply,
+  Sale,
+  User,
+  Client,
+  Store,
+  StoreStock,
+  HistoryEntry,
+} from '../types';
 import {
   mockClients,
   mockProducts,
   mockSales,
+  mockStores,
+  mockStockByStore,
   mockSuppliers,
   mockSupplies,
   mockUsers,
@@ -24,6 +36,36 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
   const [clients, setClients] = useState<Client[]>(mockClients);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [currentUser] = useState<User>(mockUsers[0]);
+  const [stores, setStores] = useState<Store[]>(mockStores);
+  const [stockByStore, setStockByStore] = useState<StoreStock[]>(mockStockByStore);
+
+  const bumpStore = (storeId: string, productId: string, delta: number) => {
+    setStockByStore((prev) => {
+      const idx = prev.findIndex(
+        (s) => s.storeId === storeId && s.productId === productId
+      );
+      if (idx === -1) {
+        if (delta <= 0) return prev;
+        const store = stores.find((s) => s.id === storeId);
+        const product = products.find((p) => p.id === productId);
+        if (!store || !product) return prev;
+        const entry: StoreStock = {
+          storeId,
+          storeName: store.name,
+          storeCity: store.city,
+          isDispatchCenter: store.isDispatchCenter,
+          productId,
+          productSku: product.sku,
+          productName: product.name,
+          quantity: delta,
+        };
+        return [...prev, entry];
+      }
+      return prev.map((s, i) =>
+        i === idx ? { ...s, quantity: s.quantity + delta } : s
+      );
+    });
+  };
 
   const record = (
     type: HistoryEntry['type'],
@@ -98,6 +140,8 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     setSupplies((prev) => [...prev, newSupply]);
     if (newSupply.status === 'received') {
       changeStock(newSupply.productId, newSupply.quantity);
+      const depot = stores.find((s) => s.isDispatchCenter);
+      if (depot) bumpStore(depot.id, newSupply.productId, newSupply.quantity);
     }
     const product = products.find((p) => p.id === supply.productId);
     if (product) record('supply', 'create', newSupply.id, product.name, `Qté: ${supply.quantity}`);
@@ -108,6 +152,8 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     setSupplies((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)));
     if (oldSupply && updates.status === 'received' && oldSupply.status !== 'received') {
       changeStock(oldSupply.productId, oldSupply.quantity);
+      const depot = stores.find((s) => s.isDispatchCenter);
+      if (depot) bumpStore(depot.id, oldSupply.productId, oldSupply.quantity);
     }
   };
 
@@ -116,6 +162,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     setSales((prev) => [...prev, newSale]);
     if (newSale.status === 'completed') {
       changeStock(newSale.productId, -newSale.quantity);
+      if (newSale.storeId) bumpStore(newSale.storeId, newSale.productId, -newSale.quantity);
     }
     const product = products.find((p) => p.id === sale.productId);
     if (product) record('sale', 'create', newSale.id, product.name, `Qté: ${sale.quantity}`);
@@ -162,6 +209,38 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     record('client', 'delete', id, clients.find((c) => c.id === id)?.name ?? id);
   };
 
+  const addStore: StoreContextType['addStore'] = (store) => {
+    const newStore: Store = { ...store, id: Date.now().toString(), createdAt: new Date() };
+    setStores((prev) => [...prev, newStore]);
+    record('store', 'create', newStore.id, newStore.name);
+  };
+
+  const updateStore: StoreContextType['updateStore'] = (id, updates) => {
+    setStores((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)));
+    record('store', 'update', id, stores.find((s) => s.id === id)?.name ?? id);
+  };
+
+  const deleteStore: StoreContextType['deleteStore'] = (id) => {
+    setStores((prev) => prev.filter((s) => s.id !== id));
+    setStockByStore((prev) => prev.filter((s) => s.storeId !== id));
+    record('store', 'delete', id, stores.find((s) => s.id === id)?.name ?? id);
+  };
+
+  const transferStock: StoreContextType['transferStock'] = (input: TransferStockInput) => {
+    const fromName = stores.find((s) => s.id === input.fromStoreId)?.name ?? input.fromStoreId;
+    const toName = stores.find((s) => s.id === input.toStoreId)?.name ?? input.toStoreId;
+    bumpStore(input.fromStoreId, input.productId, -input.quantity);
+    bumpStore(input.toStoreId, input.productId, input.quantity);
+    const product = products.find((p) => p.id === input.productId);
+    record(
+      'store',
+      'update',
+      input.fromStoreId,
+      product?.name ?? input.productId,
+      `Répartition ${input.quantity} : ${fromName} -> ${toName}`
+    );
+  };
+
   const value: StoreContextType = {
     products,
     suppliers,
@@ -169,6 +248,8 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     sales,
     users,
     clients,
+    stores,
+    stockByStore,
     history,
     currentUser,
     isDemoMode: true,
@@ -188,6 +269,10 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     addClient,
     updateClient,
     deleteClient,
+    addStore,
+    updateStore,
+    deleteStore,
+    transferStock,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

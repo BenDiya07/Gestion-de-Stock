@@ -20,6 +20,8 @@ const TYPE_MAP: Record<string, HistoryEntry['type']> = {
   sales: 'sale',
   profiles: 'user',
   clients: 'client',
+  stores: 'store',
+  transfer: 'transfer',
 };
 
 function userName(row: AuditRowWithUser): string {

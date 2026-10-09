@@ -1,0 +1,88 @@
+name: CI/CD
+
+# Validation + déploiement automatique.
+#  - push sur `main` : checks, migrations Supabase puis déploiement Vercel (prod)
+#  - push sur `modi01` / pull request : checks uniquement
+on:
+  push:
+    branches: [main, modi01]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------- checks
+  checks:
+    name: Checks (typecheck, tests, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests unitaires
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  # --------------------------------------------------------------- migrate
+  # Applique les migrations `supabase/migrations/*` sur le projet Supabase
+  # distant dès qu'une branche est mergée dans `main`.
+  migrate:
+    name: Appliquer les migrations Supabase
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: checks
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Lier le projet Supabase
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+
+      - name: Appliquer les migrations
+        run: supabase db push
+
+  # --------------------------------------------------------------- deploy
+  # Déploie la branche `main` en production Vercel. Le build se fait chez
+  # Vercel, qui injecte ses variables d’environnement (VITE_SUPABASE_URL /
+  # VITE_SUPABASE_ANON_KEY) : l’application tourne en mode Supabase, pas démo.
+  deploy:
+    name: Déployer sur Vercel (production)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [checks, migrate]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Déployer avec la CLI Vercel
+        run: npx vercel deploy --prod --yes --token "$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          # Le CLI lit ces deux identifiants pour cibler le bon projet
+          # (équivalent du `vercel link` en local).
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
