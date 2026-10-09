@@ -24,6 +24,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  // Expose au client aussi les variables fournies par l’intégration
+  // Vercel ↔ Supabase (SUPABASE_URL / SUPABASE_ANON_KEY), en plus des
+  // variables VITE_SUPABASE_* utilisées par le mode démo/local.
+  envPrefix: ['VITE_', 'SUPABASE_URL', 'SUPABASE_ANON_KEY'],
   resolve: {
     alias: {
       // Alias @ to the src directory

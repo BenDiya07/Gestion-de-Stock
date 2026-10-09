@@ -2,10 +2,19 @@ import { type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryClient';
-import { StoreContext, type StoreContextType } from './store';
+import { StoreContext, type StoreContextType, type TransferStockInput } from './store';
 import { useAuth } from './AuthContext';
-import type { Product, Supplier, Supply, Sale, User, Client } from '../types';
-import type { ProductInput, SupplierInput, SupplyInput, SaleInput, ClientInput, UserInput } from '../schemas';
+import type { Product, Supplier, Supply, Sale, User, Client, Store, StoreStock } from '../types';
+import type {
+  ProductInput,
+  SupplierInput,
+  SupplyInput,
+  SaleInput,
+  ClientInput,
+  UserInput,
+  StoreInput,
+  TransferInput,
+} from '../schemas';
 import * as productsApi from '../services/products.service';
 import * as suppliersApi from '../services/suppliers.service';
 import * as suppliesApi from '../services/supplies.service';
@@ -13,6 +22,7 @@ import * as salesApi from '../services/sales.service';
 import * as clientsApi from '../services/clients.service';
 import * as usersApi from '../services/users.service';
 import * as historyApi from '../services/history.service';
+import * as storesApi from '../services/stores.service';
 
 function onError(error: unknown) {
   toast.error('Opération échouée', { description: (error as Error).message });
@@ -33,10 +43,29 @@ export function SupabaseStoreProvider({ children }: { children: ReactNode }) {
   const clientsQuery = useQuery({ queryKey: queryKeys.clients, queryFn: clientsApi.listClients });
   const usersQuery = useQuery({ queryKey: queryKeys.users, queryFn: usersApi.listProfiles });
   const historyQuery = useQuery({ queryKey: queryKeys.history, queryFn: historyApi.listHistory });
+  const storesQuery = useQuery({ queryKey: queryKeys.stores, queryFn: storesApi.listStores });
+  const storeStockQuery = useQuery({ queryKey: queryKeys.storeStock, queryFn: storesApi.listStoreStock });
 
-  const productKeys = [queryKeys.products, queryKeys.history];
-  const saleKeys = [queryKeys.sales, queryKeys.products, queryKeys.clients, queryKeys.history];
-  const supplyKeys = [queryKeys.supplies, queryKeys.products, queryKeys.history];
+  const productKeys = [queryKeys.products, queryKeys.history, queryKeys.storeStock];
+  const storeKeys = [
+    queryKeys.stores,
+    queryKeys.storeStock,
+    queryKeys.history,
+    queryKeys.products,
+  ];
+  const saleKeys = [
+    queryKeys.sales,
+    queryKeys.products,
+    queryKeys.clients,
+    queryKeys.history,
+    queryKeys.storeStock,
+  ];
+  const supplyKeys = [
+    queryKeys.supplies,
+    queryKeys.products,
+    queryKeys.history,
+    queryKeys.storeStock,
+  ];
 
   const addProduct = useMutation({
     mutationFn: (input: ProductInput) => productsApi.createProduct(input),
@@ -130,6 +159,29 @@ export function SupabaseStoreProvider({ children }: { children: ReactNode }) {
     onError,
   });
 
+  const addStore = useMutation({
+    mutationFn: (input: StoreInput) => storesApi.createStore(input),
+    onSuccess: () => invalidate(storeKeys),
+    onError,
+  });
+  const updateStore = useMutation({
+    mutationFn: (vars: { id: string; values: Partial<StoreInput> }) =>
+      storesApi.updateStore(vars.id, vars.values),
+    onSuccess: () => invalidate(storeKeys),
+    onError,
+  });
+  const deleteStore = useMutation({
+    mutationFn: (id: string) => storesApi.deleteStore(id),
+    onSuccess: () => invalidate(storeKeys),
+    onError,
+  });
+  const transferStockMutation = useMutation({
+    mutationFn: (vars: { input: TransferInput; fromStoreId: string; toStoreId: string }) =>
+      storesApi.transferStock(vars.input, vars.fromStoreId, vars.toStoreId),
+    onSuccess: () => invalidate([queryKeys.storeStock, queryKeys.stores, queryKeys.products, queryKeys.history]),
+    onError,
+  });
+
   if (!currentUser) return null;
 
   const value: StoreContextType = {
@@ -139,6 +191,8 @@ export function SupabaseStoreProvider({ children }: { children: ReactNode }) {
     sales: salesQuery.data ?? [],
     clients: clientsQuery.data ?? [],
     users: usersQuery.data ?? [],
+    stores: storesQuery.data ?? [],
+    stockByStore: storeStockQuery.data ?? [],
     history: historyQuery.data ?? [],
     currentUser,
     isDemoMode: false,
@@ -177,6 +231,18 @@ export function SupabaseStoreProvider({ children }: { children: ReactNode }) {
     updateClient: (id: string, client: Partial<Client>) =>
       updateClient.mutate({ id, values: client as Partial<ClientInput> }),
     deleteClient: (id: string) => deleteClient.mutate(id),
+
+    addStore: (store: Omit<Store, 'id' | 'createdAt'>) =>
+      addStore.mutate(store as unknown as StoreInput),
+    updateStore: (id: string, store: Partial<Store>) =>
+      updateStore.mutate({ id, values: store as Partial<StoreInput> }),
+    deleteStore: (id: string) => deleteStore.mutate(id),
+    transferStock: (input: TransferStockInput) =>
+      transferStockMutation.mutate({
+        input: input,
+        fromStoreId: input.fromStoreId,
+        toStoreId: input.toStoreId,
+      }),
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

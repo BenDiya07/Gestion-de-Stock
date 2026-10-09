@@ -15,5 +15,10 @@ export default defineConfig({
     url: 'http://localhost:5173',
     reuseExistingServer: true,
     timeout: 120_000,
+    env: {
+      // Force le mode démo pour les tests de fumée, même si .env est présent.
+      VITE_SUPABASE_URL: '',
+      VITE_SUPABASE_ANON_KEY: '',
+    },
   },
 });

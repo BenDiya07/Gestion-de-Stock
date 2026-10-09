@@ -13,6 +13,27 @@ export interface ProfileRow {
   created_at: string;
 }
 
+export interface StoreRow {
+  id: string;
+  name: string;
+  city: string;
+  address: string | null;
+  is_dispatch_center: boolean;
+  status: 'active' | 'inactive';
+  created_at: string;
+}
+
+export interface StoreStockRow {
+  store_id: string;
+  store_name: string;
+  store_city: string;
+  is_dispatch_center: boolean;
+  product_id: string;
+  product_sku: string;
+  product_name: string;
+  quantity: number;
+}
+
 export interface SupplierRow {
   id: string;
   name: string;
@@ -58,6 +79,7 @@ export interface SupplyRow {
 export interface SaleRow {
   id: string;
   product_id: string;
+  store_id: string | null;
   client_id: string | null;
   customer_name: string | null;
   quantity: number;

@@ -87,8 +87,8 @@ async function main() {
   console.log(`Connecté via ${who}`);
 
   step('2. Données seed');
-  const tables = ['products', 'sales', 'clients', 'suppliers', 'stock_movements'];
-  const labels = ['produits', 'ventes', 'clients', 'fournisseurs', 'mouvements de stock'];
+  const tables = ['products', 'sales', 'clients', 'suppliers', 'stock_movements', 'stores'];
+  const labels = ['produits', 'ventes', 'clients', 'fournisseurs', 'mouvements de stock', 'boutiques'];
   let productsCount = 0;
 
   for (let t = 0; t < tables.length; t++) {
@@ -100,7 +100,7 @@ async function main() {
       if (probe.error) {
         console.error(
           `Table '${table}' inaccessible : ${probe.error.message}\n` +
-            '=> Les migrations 0001-0003 sont-elles appliquées ? (SQL Editor -> init-all.sql)'
+            '=> Les migrations 0001-0004 sont-elles appliquées ? (SQL Editor -> init-all.sql)'
         );
       } else {
         console.error(`Impossible de compter '${table}' (statut ${probe.status}).`);
@@ -118,6 +118,46 @@ async function main() {
     return;
   }
 
+  step('2b. Stock par boutique (invariant somme = stock produit)');
+  const { data: storeStock, error: storeStockError } = await supabase
+    .from('store_stock')
+    .select('product_id, product_sku, store_id, store_name, quantity');
+  if (storeStockError) {
+    console.error(`Erreur vue store_stock : ${storeStockError.message}`);
+    process.exitCode = 1;
+    return;
+  }
+  const lineCount = storeStock.filter((r) => r.quantity > 0).length;
+  console.log(`lignes de stock non nulles (produit x boutique) : ${lineCount}`);
+
+  const { data: products, error: productsError } = await supabase
+    .from('products')
+    .select('id, sku, stock');
+  if (productsError) {
+    console.error(`Erreur lecture produits : ${productsError.message}`);
+    process.exitCode = 1;
+    return;
+  }
+  const byProduct = new Map();
+  for (const row of storeStock) {
+    byProduct.set(
+      row.product_id,
+      (byProduct.get(row.product_id) ?? 0) + Number(row.quantity)
+    );
+  }
+  const mismatches = products.filter(
+    (p) => (byProduct.get(p.id) ?? 0) !== Number(p.stock)
+  );
+  if (mismatches.length > 0) {
+    console.error(
+      `Invariant violé : ${mismatches.map((m) => m.sku).join(', ')} ` +
+        `(somme boutiques=${byProduct.get(mismatches[0].id)} != stock=${mismatches[0].stock})`
+    );
+    process.exitCode = 1;
+    return;
+  }
+  console.log('invariant somme(par boutique) = stock total : OK');
+
   step('3. RPC product_forecast_all');
   const { data, error } = await supabase.rpc('product_forecast_all', {
     p_window_days: 30,
@@ -125,7 +165,7 @@ async function main() {
     p_service_level: 0.95,
   });
   if (error) {
-    console.error(`Erreur RPC : ${error.message}\n=> Migrations 0002/0003 appliquées ?`);
+    console.error(`Erreur RPC : ${error.message}\n=> Migration 0003 appliquée ?`);
     process.exitCode = 1;
     return;
   }

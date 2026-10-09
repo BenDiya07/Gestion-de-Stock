@@ -1,3 +1,24 @@
+export interface Store {
+  id: string;
+  name: string;
+  city: string;
+  address: string;
+  isDispatchCenter: boolean;
+  status: 'active' | 'inactive';
+  createdAt: Date;
+}
+
+export interface StoreStock {
+  storeId: string;
+  storeName: string;
+  storeCity: string;
+  isDispatchCenter: boolean;
+  productId: string;
+  productSku: string;
+  productName: string;
+  quantity: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -44,6 +65,7 @@ export interface Sale {
   date: Date;
   customerId?: string;
   customerName?: string;
+  storeId?: string;
   status: 'completed' | 'pending' | 'cancelled';
 }
 
@@ -74,7 +96,7 @@ export interface Client {
 
 export interface HistoryEntry {
   id: string;
-  type: 'product' | 'supplier' | 'supply' | 'sale' | 'user' | 'client';
+  type: 'product' | 'supplier' | 'supply' | 'sale' | 'user' | 'client' | 'store' | 'transfer';
   action: 'create' | 'update' | 'delete';
   entityId: string;
   entityName: string;

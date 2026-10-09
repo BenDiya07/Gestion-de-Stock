@@ -6,6 +6,7 @@ import { mapSale } from './sales.service';
 import { mapClient } from './clients.service';
 import { mapProfile } from './users.service';
 import { mapAudit } from './history.service';
+import { mapStore, mapStoreStock } from './stores.service';
 
 describe('mapProduct', () => {
   it('convertit une ligne produits snake_case en modèle de domaine', () => {
@@ -90,21 +91,50 @@ describe('mapSale', () => {
     const sale = mapSale({
       id: 'v1', product_id: 'p1', client_id: 'c1', customer_name: 'Société ABC',
       quantity: 2, unit_price: 10, total_price: 20, status: 'completed',
-      created_at: '2024-01-01T00:00:00Z',
+      created_at: '2024-01-01T00:00:00Z', store_id: 'boutique-1',
     });
     expect(sale.customerId).toBe('c1');
     expect(sale.customerName).toBe('Société ABC');
     expect(sale.totalPrice).toBe(20);
+    expect(sale.storeId).toBe('boutique-1');
   });
 
   it('laisse les champs annexes undefined quand absents', () => {
     const sale = mapSale({
       id: 'v1', product_id: 'p1', client_id: null, customer_name: null,
       quantity: 1, unit_price: 5, total_price: 5, status: 'pending',
-      created_at: '2024-01-01T00:00:00Z',
+      created_at: '2024-01-01T00:00:00Z', store_id: null,
     });
     expect(sale.customerId).toBeUndefined();
     expect(sale.customerName).toBeUndefined();
+    expect(sale.storeId).toBeUndefined();
+  });
+});
+
+describe('mapStore', () => {
+  it('convertit une boutique et applique les valeurs par défaut', () => {
+    const store = mapStore({
+      id: 'b1', name: 'Dépôt central — Kinshasa', city: 'Kinshasa', address: null,
+      is_dispatch_center: true, status: 'active', created_at: '2024-01-01T00:00:00Z',
+    });
+    expect(store.name).toBe('Dépôt central — Kinshasa');
+    expect(store.isDispatchCenter).toBe(true);
+    expect(store.address).toBe('');
+    expect(store.createdAt).toBeInstanceOf(Date);
+  });
+});
+
+describe('mapStoreStock', () => {
+  it('convertit une ligne stock_stock avec les infos jointes', () => {
+    const line = mapStoreStock({
+      store_id: 'b1', store_name: 'Merkey Lubumbashi', store_city: 'Lubumbashi',
+      is_dispatch_center: false, product_id: 'p1', product_sku: 'MRK-PHG-001',
+      product_name: 'Photogray 17', quantity: 12,
+    });
+    expect(line.storeId).toBe('b1');
+    expect(line.storeName).toBe('Merkey Lubumbashi');
+    expect(line.productSku).toBe('MRK-PHG-001');
+    expect(line.quantity).toBe(12);
   });
 });
 
