@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Tests
+test-results/
+playwright-report/
+coverage/
+
+# Environnement (contient des clés — ne jamais committer)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / Éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
