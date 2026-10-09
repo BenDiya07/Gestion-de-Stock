@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '../components/PageHeader';
 import { useStore } from '../context/StoreContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -166,12 +167,11 @@ export function Boutiques() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Boutiques Merkey</h1>
-        <p className="text-gray-500 mt-1">
-          Dépôt central, magasins et répartition des lunettes
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Réseau"
+        title="Boutiques Merkey"
+        subtitle="Dépôt central, magasins et répartition des lunettes"
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -231,7 +231,7 @@ export function Boutiques() {
             <div className="flex items-center justify-between">
               <CardTitle>Points de vente</CardTitle>
               {isAdmin && (
-                <Button size="sm" onClick={() => handleStoreDialogOpen()}>
+                <Button size="sm" variant="brand" onClick={() => handleStoreDialogOpen()}>
                   <Plus className="w-4 h-4 mr-1" />
                   Ajouter
                 </Button>
@@ -316,7 +316,7 @@ export function Boutiques() {
             <div className="flex items-center justify-between">
               <CardTitle>Stock — {selectedStore?.name ?? '—'}</CardTitle>
               {selectedStore && depot && selectedStore.id !== depot.id && (
-                <Button size="sm" onClick={handleOpenTransfer}>
+                <Button size="sm" variant="brand" onClick={handleOpenTransfer}>
                   <ArrowRightLeft className="w-4 h-4 mr-1" />
                   Répartir
                 </Button>

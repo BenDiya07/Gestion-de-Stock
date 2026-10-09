@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '../components/PageHeader';
 import { useStore } from '../context/StoreContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -114,17 +115,18 @@ export function Suppliers() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestion des Fournisseurs</h1>
-        <p className="text-gray-500 mt-1">Gérez vos partenaires fournisseurs</p>
-      </div>
+      <PageHeader
+        eyebrow="Fournisseurs"
+        title="Gestion des Fournisseurs"
+        subtitle="Gérez vos partenaires fournisseurs"
+      />
 
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Liste des Fournisseurs</CardTitle>
             {isAdmin && (
-              <Button onClick={() => handleOpenDialog()}>
+              <Button variant="brand" onClick={() => handleOpenDialog()}>
                 <Plus className="w-4 h-4 mr-2" />
                 Ajouter un Fournisseur
               </Button>

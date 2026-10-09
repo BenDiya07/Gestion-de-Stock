@@ -1,3 +1,4 @@
+import { PageHeader } from '../components/PageHeader';
 import { useStore } from '../context/StoreContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import {
@@ -56,10 +57,11 @@ export function Dashboard() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord</h1>
-        <p className="text-gray-500 mt-1">Vue d'ensemble de votre magasin</p>
-      </div>
+      <PageHeader
+        eyebrow="Vue d'ensemble"
+        title="Tableau de Bord"
+        subtitle="Pilotez le stock, les ventes et la répartition entre boutiques."
+      />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

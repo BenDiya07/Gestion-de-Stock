@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '../components/PageHeader';
 import { useStore } from '../context/StoreContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -178,10 +179,11 @@ export function Sales() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestion des Ventes</h1>
-        <p className="text-gray-500 mt-1">Enregistrez et suivez vos ventes</p>
-      </div>
+      <PageHeader
+        eyebrow="Ventes"
+        title="Gestion des Ventes"
+        subtitle="Enregistrez et suivez vos ventes par boutique"
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -234,7 +236,7 @@ export function Sales() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Historique des Ventes</CardTitle>
-            <Button onClick={handleOpenDialog}>
+            <Button variant="brand" onClick={handleOpenDialog}>
               <Plus className="w-4 h-4 mr-2" />
               Nouvelle Vente
             </Button>

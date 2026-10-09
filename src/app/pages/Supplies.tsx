@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '../components/PageHeader';
 import { useStore } from '../context/StoreContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -127,17 +128,18 @@ export function Supplies() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestion des Approvisionnements</h1>
-        <p className="text-gray-500 mt-1">Suivez vos commandes fournisseurs</p>
-      </div>
+      <PageHeader
+        eyebrow="Réception"
+        title="Gestion des Approvisionnements"
+        subtitle="Suivez vos commandes fournisseurs"
+      />
 
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Liste des Approvisionnements</CardTitle>
             {isAdmin && (
-              <Button onClick={handleOpenDialog}>
+              <Button variant="brand" onClick={handleOpenDialog}>
                 <Plus className="w-4 h-4 mr-2" />
                 Nouvel Approvisionnement
               </Button>
