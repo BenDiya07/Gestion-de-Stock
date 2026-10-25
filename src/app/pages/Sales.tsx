@@ -178,7 +178,7 @@ export function Sales() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Ventes"
         title="Gestion des Ventes"
@@ -234,9 +234,13 @@ export function Sales() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Historique des Ventes</CardTitle>
-            <Button variant="brand" onClick={handleOpenDialog}>
+            <Button
+              variant="brand"
+              className="w-full sm:w-auto"
+              onClick={handleOpenDialog}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Nouvelle Vente
             </Button>

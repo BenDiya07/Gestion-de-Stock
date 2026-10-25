@@ -128,7 +128,7 @@ export function Users() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Équipe"
         title="Gestion des Utilisateurs"
@@ -137,10 +137,14 @@ export function Users() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Liste des Utilisateurs</CardTitle>
             {isAdmin && (
-              <Button variant="brand" onClick={() => handleOpenDialog()}>
+              <Button
+                variant="brand"
+                className="w-full sm:w-auto"
+                onClick={() => handleOpenDialog()}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Ajouter un Utilisateur
               </Button>

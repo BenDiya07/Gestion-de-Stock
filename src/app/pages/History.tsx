@@ -71,7 +71,7 @@ export function History() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Audit"
         title="Historique des Actions"
@@ -84,7 +84,7 @@ export function History() {
             <HistoryIcon className="w-5 h-5" />
             Journal d'Activité
           </CardTitle>
-          <div className="flex gap-4 mt-4">
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
@@ -97,7 +97,7 @@ export function History() {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:w-auto"
             >
               <option value="all">Tous les types</option>
               <option value="product">Produits</option>

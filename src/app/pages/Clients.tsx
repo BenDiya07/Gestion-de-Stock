@@ -146,7 +146,7 @@ export function Clients() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Clients"
         title="Gestion des Clients"
@@ -220,9 +220,9 @@ export function Clients() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Liste des Clients</CardTitle>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <div className="flex gap-1 border rounded-lg p-1">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -240,7 +240,11 @@ export function Clients() {
                 </Button>
               </div>
               {isAdmin && (
-                <Button variant="brand" onClick={() => handleOpenDialog()}>
+                <Button
+                  variant="brand"
+                  className="w-full sm:w-auto"
+                  onClick={() => handleOpenDialog()}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Ajouter un Client
                 </Button>
@@ -429,15 +433,15 @@ export function Clients() {
 
       {/* Dialog d'ajout/modification */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {editingClient ? 'Modifier le Client' : 'Ajouter un Client'}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-4 py-4">
-              <div className="col-span-2">
+            <div className="grid grid-cols-1 gap-4 py-4 sm:grid-cols-2">
+              <div className="col-span-full">
                 <Label htmlFor="type">Type de client *</Label>
                 <select
                   id="type"
@@ -474,7 +478,7 @@ export function Clients() {
                 </div>
               )}
 
-              <div className={formData.type === 'individual' ? 'col-span-2' : ''}>
+              <div className={formData.type === 'individual' ? 'col-span-full' : ''}>
                 <Label htmlFor="email">Email *</Label>
                 <Input
                   id="email"
@@ -485,7 +489,7 @@ export function Clients() {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-full">
                 <Label htmlFor="phone">Téléphone *</Label>
                 <Input
                   id="phone"
@@ -496,7 +500,7 @@ export function Clients() {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-full">
                 <Label htmlFor="address">Adresse *</Label>
                 <Input
                   id="address"
@@ -526,7 +530,7 @@ export function Clients() {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-full">
                 <Label htmlFor="status">Statut *</Label>
                 <select
                   id="status"
@@ -542,7 +546,7 @@ export function Clients() {
                 </select>
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-full">
                 <Label htmlFor="notes">Notes</Label>
                 <textarea
                   id="notes"

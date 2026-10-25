@@ -26,9 +26,9 @@ export function Login() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen min-h-svh bg-gray-50">
       {/* Panneau de marque */}
-      <aside className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-navy p-12 text-white lg:flex">
+      <aside className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-navy p-8 text-white lg:flex xl:p-12">
         <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-brand/5 blur-3xl" />
 
@@ -60,18 +60,25 @@ export function Login() {
       </aside>
 
       {/* Formulaire */}
-      <main className="flex flex-1 items-center justify-center p-8">
+      <main className="flex flex-1 flex-col items-center justify-start overflow-y-auto px-4 py-8 sm:justify-center sm:p-8">
         <div className="w-full max-w-md">
-          <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-brand/50 bg-brand/10">
-              <Glasses className="h-5 w-5 text-brand" />
+          <div className="mb-6 flex items-center gap-3 lg:hidden">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-brand/50 bg-brand/10">
+              <Glasses className="h-6 w-6 text-brand" />
             </div>
-            <p className="font-display text-2xl font-medium text-navy">Merkey</p>
+            <div className="leading-tight">
+              <p className="font-display text-2xl font-medium text-navy">Merkey</p>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-gray-500">
+                Lunetterie · Kinshasa
+              </p>
+            </div>
           </div>
 
           <Card className="border-0 shadow-xl">
             <CardHeader>
-              <CardTitle className="font-display text-3xl text-navy">Connexion</CardTitle>
+              <CardTitle className="font-display text-2xl text-navy sm:text-3xl">
+                Connexion
+              </CardTitle>
               <p className="text-sm text-gray-500">Accédez à votre espace de gestion</p>
             </CardHeader>
             <CardContent>
@@ -81,6 +88,11 @@ export function Login() {
                   <Input
                     id="email"
                     type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -91,6 +103,7 @@ export function Login() {
                   <Input
                     id="password"
                     type="password"
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
