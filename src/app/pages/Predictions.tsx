@@ -42,7 +42,7 @@ export function Predictions() {
     setOptions((prev) => ({ ...prev, ...patch }));
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Prévisionnel"
         title="Alerte prédictive de rupture"

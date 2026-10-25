@@ -114,7 +114,7 @@ export function Suppliers() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Fournisseurs"
         title="Gestion des Fournisseurs"
@@ -123,10 +123,14 @@ export function Suppliers() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Liste des Fournisseurs</CardTitle>
             {isAdmin && (
-              <Button variant="brand" onClick={() => handleOpenDialog()}>
+              <Button
+                variant="brand"
+                className="w-full sm:w-auto"
+                onClick={() => handleOpenDialog()}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Ajouter un Fournisseur
               </Button>

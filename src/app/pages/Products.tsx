@@ -114,7 +114,7 @@ export function Products() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Catalogue"
         title="Gestion des Produits"
@@ -123,10 +123,14 @@ export function Products() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Liste des Produits</CardTitle>
             {isAdmin && (
-              <Button variant="brand" onClick={() => handleOpenDialog()}>
+              <Button
+                variant="brand"
+                className="w-full sm:w-auto"
+                onClick={() => handleOpenDialog()}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Ajouter un Produit
               </Button>
@@ -236,15 +240,15 @@ export function Products() {
 
       {/* Dialog d'ajout/modification */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
               {editingProduct ? 'Modifier le Produit' : 'Ajouter un Produit'}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 gap-4 py-4">
-              <div className="col-span-2">
+            <div className="grid grid-cols-1 gap-4 py-4 sm:grid-cols-2">
+              <div className="col-span-full">
                 <Label htmlFor="name">Nom du produit *</Label>
                 <Input
                   id="name"
@@ -328,7 +332,7 @@ export function Products() {
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-full">
                 <Label htmlFor="supplierId">Fournisseur *</Label>
                 <select
                   id="supplierId"
@@ -346,7 +350,7 @@ export function Products() {
                 </select>
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-full">
                 <Label htmlFor="description">Description</Label>
                 <textarea
                   id="description"

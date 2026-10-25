@@ -166,7 +166,7 @@ export function Boutiques() {
     products.find((p) => p.id === productId)?.name ?? '—';
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Réseau"
         title="Boutiques Merkey"
@@ -228,7 +228,7 @@ export function Boutiques() {
         {/* Liste des boutiques */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>Points de vente</CardTitle>
               {isAdmin && (
                 <Button size="sm" variant="brand" onClick={() => handleStoreDialogOpen()}>
@@ -313,7 +313,7 @@ export function Boutiques() {
         {/* Stock de la boutique sélectionnée */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>Stock — {selectedStore?.name ?? '—'}</CardTitle>
               {selectedStore && depot && selectedStore.id !== depot.id && (
                 <Button size="sm" variant="brand" onClick={handleOpenTransfer}>
