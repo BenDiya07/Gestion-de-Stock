@@ -30,6 +30,13 @@ export interface Product {
   minStock: number;
   supplierId: string;
   description?: string;
+  imageUrl?: string;
+  gallery?: string[];
+  compareAtPrice?: number;
+  features?: string[];
+  isFeatured?: boolean;
+  isNew?: boolean;
+  isActive?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -94,9 +101,57 @@ export interface Client {
   totalPurchases: number;
 }
 
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'preparing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled';
+
+export interface OrderItem {
+  id: string;
+  orderId: string;
+  productId?: string;
+  productName: string;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+}
+
+export interface Order {
+  id: string;
+  reference: string;
+  customerName: string;
+  customerPhone: string;
+  customerCity?: string;
+  note?: string;
+  subtotal: number;
+  discount: number;
+  shipping: number;
+  total: number;
+  promoCode?: string;
+  paymentMethod: string;
+  status: OrderStatus;
+  stockApplied: boolean;
+  storeId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  items: OrderItem[];
+}
+
 export interface HistoryEntry {
   id: string;
-  type: 'product' | 'supplier' | 'supply' | 'sale' | 'user' | 'client' | 'store' | 'transfer';
+  type:
+    | 'product'
+    | 'supplier'
+    | 'supply'
+    | 'sale'
+    | 'user'
+    | 'client'
+    | 'store'
+    | 'transfer'
+    | 'order';
   action: 'create' | 'update' | 'delete';
   entityId: string;
   entityName: string;

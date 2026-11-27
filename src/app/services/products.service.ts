@@ -21,9 +21,34 @@ export function mapProduct(row: ProductRow): Product {
     minStock: Number(row.min_stock),
     supplierId: row.supplier_id ?? '',
     description: row.description ?? '',
+    imageUrl: row.image_url ?? undefined,
+    gallery: row.gallery ?? [],
+    compareAtPrice: row.compare_at_price != null ? Number(row.compare_at_price) : undefined,
+    features: row.features ?? [],
+    isFeatured: row.is_featured ?? false,
+    isNew: row.is_new ?? false,
+    isActive: row.is_active ?? true,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
   };
+}
+
+/** Slug utilisé par le site vitrine Merkey pour filtrer les catégories. */
+function categorySlug(name: string): string {
+  const normalized = name.trim().toLowerCase();
+  if (normalized.includes('bleu') || normalized.includes('blue')) return 'lumierebleue';
+  if (normalized.includes('photo') || normalized.includes('grey') || normalized.includes('gray')) {
+    return 'photogrey';
+  }
+  if (normalized.includes('soleil') || normalized.includes('sun')) return 'soleil';
+  if (normalized.includes('accessoire') || normalized.includes('étui') || normalized.includes('etui')) {
+    return 'accessoires';
+  }
+  return normalized
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 async function resolveCategoryId(name: string): Promise<string | null> {
@@ -35,10 +60,17 @@ async function resolveCategoryId(name: string): Promise<string | null> {
     .select('id')
     .eq('name', trimmed)
     .maybeSingle();
-  if (existing?.id) return existing.id as string;
+  if (existing?.id) {
+    await supabase
+      .from('categories')
+      .update({ slug: categorySlug(trimmed) })
+      .eq('id', existing.id)
+      .is('slug', null);
+    return existing.id as string;
+  }
   const { data: created, error } = await supabase
     .from('categories')
-    .insert({ name: trimmed })
+    .insert({ name: trimmed, slug: categorySlug(trimmed) })
     .select('id')
     .single();
   if (error) throw error;
@@ -67,6 +99,13 @@ export async function createProduct(input: ProductInput): Promise<void> {
     stock: values.stock,
     min_stock: values.minStock,
     description: values.description ?? null,
+    image_url: values.imageUrl || null,
+    gallery: values.gallery ?? [],
+    compare_at_price: values.compareAtPrice ?? null,
+    features: values.features ?? [],
+    is_featured: values.isFeatured ?? false,
+    is_new: values.isNew ?? false,
+    is_active: values.isActive ?? true,
   });
   if (error) throw error;
 }
@@ -82,10 +121,29 @@ export async function updateProduct(id: string, input: Partial<ProductInput>): P
   if (input.description !== undefined) patch.description = input.description;
   if (input.supplierId !== undefined) patch.supplier_id = input.supplierId || null;
   if (input.category !== undefined) patch.category_id = await resolveCategoryId(input.category);
+  if (input.imageUrl !== undefined) patch.image_url = input.imageUrl || null;
+  if (input.gallery !== undefined) patch.gallery = input.gallery;
+  if (input.compareAtPrice !== undefined) patch.compare_at_price = input.compareAtPrice ?? null;
+  if (input.features !== undefined) patch.features = input.features;
+  if (input.isFeatured !== undefined) patch.is_featured = input.isFeatured;
+  if (input.isNew !== undefined) patch.is_new = input.isNew;
+  if (input.isActive !== undefined) patch.is_active = input.isActive;
 
   if (Object.keys(patch).length === 0) return;
   const { error } = await requireSupabase().from('products').update(patch).eq('id', id);
   if (error) throw error;
+}
+
+/** Téléverse une image produit dans le bucket public `product-images`. */
+export async function uploadProductImage(file: File): Promise<string> {
+  const supabase = requireSupabase();
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const { error } = await supabase.storage
+    .from('product-images')
+    .upload(path, file, { cacheControl: '3600', upsert: false });
+  if (error) throw error;
+  return supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl;
 }
 
 export async function deleteProduct(id: string): Promise<void> {

@@ -59,9 +59,47 @@ export interface ProductRow {
   stock: number;
   min_stock: number;
   description: string | null;
+  image_url?: string | null;
+  gallery?: string[] | null;
+  compare_at_price?: number | null;
+  features?: string[] | null;
+  is_featured?: boolean | null;
+  is_new?: boolean | null;
+  is_active?: boolean | null;
   created_at: string;
   updated_at: string;
   categories?: CategoryRef | CategoryRef[] | null;
+}
+
+export interface OrderItemRow {
+  id: string;
+  order_id: string;
+  product_id: string | null;
+  product_name: string;
+  unit_price: number;
+  quantity: number;
+  line_total: number;
+}
+
+export interface OrderRow {
+  id: string;
+  reference: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_city: string | null;
+  note: string | null;
+  subtotal: number;
+  discount: number;
+  shipping: number;
+  total: number;
+  promo_code: string | null;
+  payment_method: string;
+  status: 'pending' | 'confirmed' | 'preparing' | 'shipped' | 'delivered' | 'cancelled';
+  stock_applied: boolean;
+  store_id: string | null;
+  created_at: string;
+  updated_at: string;
+  order_items?: OrderItemRow[] | null;
 }
 
 export interface SupplyRow {

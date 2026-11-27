@@ -5,6 +5,7 @@ import { Products } from './pages/Products';
 import { Suppliers } from './pages/Suppliers';
 import { Supplies } from './pages/Supplies';
 import { Sales } from './pages/Sales';
+import { Orders } from './pages/Orders';
 import { Clients } from './pages/Clients';
 import { Users } from './pages/Users';
 import { History } from './pages/History';
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
       { path: 'suppliers', Component: Suppliers },
       { path: 'supplies', Component: Supplies },
       { path: 'sales', Component: Sales },
+      { path: 'orders', Component: Orders },
       { path: 'stores', Component: Boutiques },
       { path: 'clients', Component: Clients },
       { path: 'users', Component: Users },

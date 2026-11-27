@@ -10,9 +10,12 @@ import type {
   Store,
   StoreStock,
   HistoryEntry,
+  Order,
+  OrderStatus,
 } from '../types';
 import {
   mockClients,
+  mockOrders,
   mockProducts,
   mockSales,
   mockStores,
@@ -38,6 +41,7 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
   const [currentUser] = useState<User>(mockUsers[0]);
   const [stores, setStores] = useState<Store[]>(mockStores);
   const [stockByStore, setStockByStore] = useState<StoreStock[]>(mockStockByStore);
+  const [orders, setOrders] = useState<Order[]>(mockOrders);
 
   const bumpStore = (storeId: string, productId: string, delta: number) => {
     setStockByStore((prev) => {
@@ -241,6 +245,43 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  const updateOrderStatus: StoreContextType['updateOrderStatus'] = (
+    id: string,
+    status: OrderStatus
+  ) => {
+    const order = orders.find((o) => o.id === id);
+    if (!order) return;
+
+    const depot = stores.find((s) => s.isDispatchCenter) ?? stores[0];
+    const applyMovement = (sign: number) =>
+      order.items.forEach((item) => {
+        if (!item.productId) return;
+        changeStock(item.productId, sign * item.quantity);
+        if (depot) bumpStore(depot.id, item.productId, sign * item.quantity);
+      });
+
+    let stockApplied = order.stockApplied;
+    if (status === 'cancelled' && order.stockApplied) {
+      applyMovement(1);
+      stockApplied = false;
+    } else if (
+      ['confirmed', 'preparing', 'shipped', 'delivered'].includes(status) &&
+      !order.stockApplied
+    ) {
+      applyMovement(-1);
+      stockApplied = true;
+    }
+
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === id
+          ? { ...o, status, stockApplied, storeId: stockApplied ? depot?.id ?? o.storeId : o.storeId }
+          : o
+      )
+    );
+    record('order', 'update', id, order.reference, `Statut : ${status}`);
+  };
+
   const value: StoreContextType = {
     products,
     suppliers,
@@ -251,8 +292,10 @@ export function MockStoreProvider({ children }: { children: ReactNode }) {
     stores,
     stockByStore,
     history,
+    orders,
     currentUser,
     isDemoMode: true,
+    updateOrderStatus,
     addProduct,
     updateProduct,
     deleteProduct,

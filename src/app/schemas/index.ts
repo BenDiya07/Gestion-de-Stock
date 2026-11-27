@@ -17,8 +17,25 @@ export const productSchema = z.object({
   minStock: z.coerce.number().int().nonnegative('Le stock minimum doit être positif'),
   supplierId: z.string().uuid().or(z.literal('')).optional(),
   description: z.string().optional(),
+  imageUrl: z.string().trim().optional(),
+  gallery: z.array(z.string().trim()).optional(),
+  compareAtPrice: z.coerce.number().nonnegative().optional(),
+  features: z.array(z.string().trim()).optional(),
+  isFeatured: z.boolean().optional(),
+  isNew: z.boolean().optional(),
+  isActive: z.boolean().optional(),
 });
 export type ProductInput = z.infer<typeof productSchema>;
+
+export const orderStatusSchema = z.enum([
+  'pending',
+  'confirmed',
+  'preparing',
+  'shipped',
+  'delivered',
+  'cancelled',
+]);
+export type OrderStatusInput = z.infer<typeof orderStatusSchema>;
 
 export const storeSchema = z.object({
   name: z.string().trim().min(1, 'Le nom est requis'),
