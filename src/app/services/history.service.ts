@@ -22,6 +22,8 @@ const TYPE_MAP: Record<string, HistoryEntry['type']> = {
   clients: 'client',
   stores: 'store',
   transfer: 'transfer',
+  orders: 'order',
+  order: 'order',
 };
 
 function userName(row: AuditRowWithUser): string {

@@ -1,4 +1,14 @@
-import type { Product, Supplier, Supply, Sale, User, Client, Store, StoreStock } from '../types';
+import type {
+  Product,
+  Supplier,
+  Supply,
+  Sale,
+  User,
+  Client,
+  Store,
+  StoreStock,
+  Order,
+} from '../types';
 
 /** Jeu de données de démonstration (mode sans Supabase configuré). */
 
@@ -272,4 +282,73 @@ export const mockStockByStore: StoreStock[] = [
   { storeId: 's2', storeName: 'Merkey Kinshasa — Centre', storeCity: 'Kinshasa', isDispatchCenter: false, productId: '2', productSku: 'LOG-MOU-001', productName: 'Souris Sans Fil Logitech', quantity: 2 },
   { storeId: 's2', storeName: 'Merkey Kinshasa — Centre', storeCity: 'Kinshasa', isDispatchCenter: false, productId: '3', productSku: 'KEY-RGB-001', productName: 'Clavier Mécanique RGB', quantity: 1 },
   { storeId: 's3', storeName: 'Merkey Lubumbashi', storeCity: 'Lubumbashi', isDispatchCenter: false, productId: '4', productSku: 'MON-4K-001', productName: 'Écran 27 pouces 4K', quantity: 0 },
+];
+
+export const mockOrders: Order[] = [
+  {
+    id: 'o1',
+    reference: 'MRK-DEMO0001',
+    customerName: 'Clarisse Mbuyi',
+    customerPhone: '+243 810 000 001',
+    customerCity: 'Kinshasa',
+    note: 'Livraison après 17h',
+    subtotal: 929.98,
+    discount: 0,
+    shipping: 0,
+    total: 929.98,
+    paymentMethod: 'cod',
+    status: 'pending',
+    stockApplied: false,
+    createdAt: new Date('2024-03-10T09:15:00'),
+    updatedAt: new Date('2024-03-10T09:15:00'),
+    items: [
+      {
+        id: 'oi1',
+        orderId: 'o1',
+        productId: '1',
+        productName: 'Ordinateur Portable Dell',
+        unitPrice: 899.99,
+        quantity: 1,
+        lineTotal: 899.99,
+      },
+      {
+        id: 'oi2',
+        orderId: 'o1',
+        productId: '2',
+        productName: 'Souris Sans Fil Logitech',
+        unitPrice: 29.99,
+        quantity: 1,
+        lineTotal: 29.99,
+      },
+    ],
+  },
+  {
+    id: 'o2',
+    reference: 'MRK-DEMO0002',
+    customerName: 'Patrick Ilunga',
+    customerPhone: '+243 820 000 002',
+    customerCity: 'Lubumbashi',
+    subtotal: 79.99,
+    discount: 8,
+    shipping: 3.5,
+    total: 75.49,
+    promoCode: 'MERKEY10',
+    paymentMethod: 'cod',
+    status: 'confirmed',
+    stockApplied: true,
+    storeId: 's1',
+    createdAt: new Date('2024-03-11T14:40:00'),
+    updatedAt: new Date('2024-03-11T15:02:00'),
+    items: [
+      {
+        id: 'oi3',
+        orderId: 'o2',
+        productId: '3',
+        productName: 'Clavier Mécanique RGB',
+        unitPrice: 79.99,
+        quantity: 1,
+        lineTotal: 79.99,
+      },
+    ],
+  },
 ];

@@ -4,7 +4,18 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryClient';
 import { StoreContext, type StoreContextType, type TransferStockInput } from './store';
 import { useAuth } from './AuthContext';
-import type { Product, Supplier, Supply, Sale, User, Client, Store, StoreStock } from '../types';
+import type {
+  Product,
+  Supplier,
+  Supply,
+  Sale,
+  User,
+  Client,
+  Store,
+  StoreStock,
+  Order,
+  OrderStatus,
+} from '../types';
 import type {
   ProductInput,
   SupplierInput,
@@ -23,6 +34,7 @@ import * as clientsApi from '../services/clients.service';
 import * as usersApi from '../services/users.service';
 import * as historyApi from '../services/history.service';
 import * as storesApi from '../services/stores.service';
+import * as ordersApi from '../services/orders.service';
 
 function onError(error: unknown) {
   toast.error('Opération échouée', { description: (error as Error).message });
@@ -45,6 +57,7 @@ export function SupabaseStoreProvider({ children }: { children: ReactNode }) {
   const historyQuery = useQuery({ queryKey: queryKeys.history, queryFn: historyApi.listHistory });
   const storesQuery = useQuery({ queryKey: queryKeys.stores, queryFn: storesApi.listStores });
   const storeStockQuery = useQuery({ queryKey: queryKeys.storeStock, queryFn: storesApi.listStoreStock });
+  const ordersQuery = useQuery({ queryKey: queryKeys.orders, queryFn: ordersApi.listOrders });
 
   const productKeys = [queryKeys.products, queryKeys.history, queryKeys.storeStock];
   const storeKeys = [
@@ -182,6 +195,19 @@ export function SupabaseStoreProvider({ children }: { children: ReactNode }) {
     onError,
   });
 
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: (vars: { id: string; status: OrderStatus }) =>
+      ordersApi.updateOrderStatus(vars.id, vars.status),
+    onSuccess: () =>
+      invalidate([
+        queryKeys.orders,
+        queryKeys.products,
+        queryKeys.storeStock,
+        queryKeys.history,
+      ]),
+    onError,
+  });
+
   if (!currentUser) return null;
 
   const value: StoreContextType = {
@@ -194,8 +220,12 @@ export function SupabaseStoreProvider({ children }: { children: ReactNode }) {
     stores: storesQuery.data ?? [],
     stockByStore: storeStockQuery.data ?? [],
     history: historyQuery.data ?? [],
+    orders: ordersQuery.data ?? [],
     currentUser,
     isDemoMode: false,
+
+    updateOrderStatus: (id: string, status: OrderStatus) =>
+      updateOrderStatusMutation.mutate({ id, status }),
 
     addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) =>
       addProduct.mutate(product as unknown as ProductInput),

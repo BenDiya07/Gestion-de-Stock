@@ -21,27 +21,47 @@ import {
   TableRow,
 } from '../components/ui/table';
 import { Badge } from '../components/ui/badge';
-import { Plus, Pencil, Trash2, Search, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, AlertTriangle, Upload, Loader2, ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Product } from '../types';
+import { uploadProductImage } from '../services/products.service';
+
+const emptyProductForm: Partial<Product> = {
+  name: '',
+  sku: '',
+  category: '',
+  price: 0,
+  cost: 0,
+  stock: 0,
+  minStock: 0,
+  supplierId: '',
+  description: '',
+  imageUrl: '',
+  gallery: [],
+  compareAtPrice: undefined,
+  features: [],
+  isFeatured: false,
+  isNew: false,
+  isActive: true,
+};
 
 export function Products() {
-  const { products, suppliers, addProduct, updateProduct, deleteProduct, currentUser } =
-    useStore();
+  const {
+    products,
+    suppliers,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    currentUser,
+    isDemoMode,
+  } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState<Partial<Product>>({
-    name: '',
-    sku: '',
-    category: '',
-    price: 0,
-    cost: 0,
-    stock: 0,
-    minStock: 0,
-    supplierId: '',
-    description: '',
-  });
+  const [uploading, setUploading] = useState(false);
+  const [formData, setFormData] = useState<Partial<Product>>({ ...emptyProductForm });
+  const [featuresText, setFeaturesText] = useState('');
+  const [galleryText, setGalleryText] = useState('');
 
   const isAdmin = currentUser.role === 'admin' || currentUser.role === 'manager';
 
@@ -56,26 +76,46 @@ export function Products() {
     if (product) {
       setEditingProduct(product);
       setFormData(product);
+      setFeaturesText((product.features ?? []).join('\n'));
+      setGalleryText((product.gallery ?? []).join('\n'));
     } else {
       setEditingProduct(null);
-      setFormData({
-        name: '',
-        sku: '',
-        category: '',
-        price: 0,
-        cost: 0,
-        stock: 0,
-        minStock: 0,
-        supplierId: suppliers[0]?.id || '',
-        description: '',
-      });
+      setFormData({ ...emptyProductForm, supplierId: suppliers[0]?.id || '' });
+      setFeaturesText('');
+      setGalleryText('');
     }
     setIsDialogOpen(true);
   };
 
+  const handleImageUpload = async (file: File | undefined) => {
+    if (!file) return;
+    if (isDemoMode) {
+      toast.error('Mode démo', {
+        description: 'Connectez Supabase pour téléverser des images.',
+      });
+      return;
+    }
+    setUploading(true);
+    try {
+      const url = await uploadProductImage(file);
+      setFormData((prev) => ({ ...prev, imageUrl: url }));
+      toast.success('Image téléversée');
+    } catch (error) {
+      toast.error('Échec du téléversement', { description: (error as Error).message });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const textToList = (value: string) =>
+    value
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!isAdmin) {
       toast.error('Accès refusé', {
         description: 'Seuls les administrateurs peuvent modifier les produits.',
@@ -83,15 +123,21 @@ export function Products() {
       return;
     }
 
+    const payload: Partial<Product> = {
+      ...formData,
+      features: textToList(featuresText),
+      gallery: textToList(galleryText),
+    };
+
     if (editingProduct) {
-      updateProduct(editingProduct.id, formData);
+      updateProduct(editingProduct.id, payload);
       toast.success('Produit modifié', {
-        description: `${formData.name} a été modifié avec succès.`,
+        description: `${payload.name} a été modifié avec succès.`,
       });
     } else {
-      addProduct(formData as Omit<Product, 'id' | 'createdAt' | 'updatedAt'>);
+      addProduct(payload as Omit<Product, 'id' | 'createdAt' | 'updatedAt'>);
       toast.success('Produit ajouté', {
-        description: `${formData.name} a été ajouté avec succès.`,
+        description: `${payload.name} a été ajouté avec succès.`,
       });
     }
     setIsDialogOpen(false);
@@ -176,9 +222,22 @@ export function Products() {
                     return (
                       <TableRow key={product.id}>
                         <TableCell>
-                          <div>
-                            <p className="font-medium">{product.name}</p>
-                            <p className="text-sm text-gray-500">{supplier?.name}</p>
+                          <div className="flex items-center gap-3">
+                            {product.imageUrl ? (
+                              <img
+                                src={product.imageUrl}
+                                alt={product.name}
+                                className="h-10 w-10 rounded-md object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gray-100">
+                                <ImageIcon className="h-4 w-4 text-gray-400" />
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-medium">{product.name}</p>
+                              <p className="text-sm text-gray-500">{supplier?.name}</p>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className="font-mono text-sm">{product.sku}</TableCell>
@@ -359,6 +418,119 @@ export function Products() {
                   className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   rows={3}
                 />
+              </div>
+
+              <div className="col-span-full rounded-lg border border-dashed p-3">
+                <Label htmlFor="imageFile">Image du produit (vitrine)</Label>
+                <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  {formData.imageUrl ? (
+                    <img
+                      src={formData.imageUrl}
+                      alt="Aperçu"
+                      className="h-16 w-16 rounded-md object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gray-100">
+                      <ImageIcon className="h-6 w-6 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      id="imageUrl"
+                      placeholder="https://... (URL de l'image)"
+                      value={formData.imageUrl ?? ''}
+                      onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    />
+                    <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-brand">
+                      {uploading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                      <span>{uploading ? 'Téléversement...' : 'Téléverser une image'}</span>
+                      <input
+                        id="imageFile"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploading || isDemoMode}
+                        onChange={(e) => void handleImageUpload(e.target.files?.[0])}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="compareAtPrice">Prix barré ($)</Label>
+                <Input
+                  id="compareAtPrice"
+                  type="number"
+                  step="0.01"
+                  value={formData.compareAtPrice ?? ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      compareAtPrice:
+                        e.target.value === '' ? undefined : parseFloat(e.target.value),
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex items-end">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={formData.isActive ?? true}
+                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  />
+                  Visible sur la vitrine
+                </label>
+              </div>
+
+              <div className="col-span-full">
+                <Label htmlFor="features">Caractéristiques (une par ligne)</Label>
+                <textarea
+                  id="features"
+                  value={featuresText}
+                  onChange={(e) => setFeaturesText(e.target.value)}
+                  className="flex min-h-[70px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  placeholder={'Protection UV 400\nMonture légère\nÉtui inclus'}
+                  rows={3}
+                />
+              </div>
+
+              <div className="col-span-full">
+                <Label htmlFor="gallery">Galerie (une URL par ligne)</Label>
+                <textarea
+                  id="gallery"
+                  value={galleryText}
+                  onChange={(e) => setGalleryText(e.target.value)}
+                  className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  rows={2}
+                />
+              </div>
+
+              <div className="col-span-full flex flex-wrap gap-6">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={formData.isFeatured ?? false}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isFeatured: e.target.checked })
+                    }
+                  />
+                  Mise en avant
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={formData.isNew ?? false}
+                    onChange={(e) => setFormData({ ...formData, isNew: e.target.checked })}
+                  />
+                  Nouveauté
+                </label>
               </div>
             </div>
             <DialogFooter>

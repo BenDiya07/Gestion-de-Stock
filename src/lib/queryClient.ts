@@ -20,4 +20,5 @@ export const queryKeys = {
   history: ['history'] as const,
   stores: ['stores'] as const,
   storeStock: ['storeStock'] as const,
+  orders: ['orders'] as const,
 };

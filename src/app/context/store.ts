@@ -9,6 +9,8 @@ import type {
   Store,
   StoreStock,
   HistoryEntry,
+  Order,
+  OrderStatus,
 } from '../types';
 
 export interface TransferStockInput {
@@ -28,8 +30,11 @@ export interface StoreContextType {
   stores: Store[];
   stockByStore: StoreStock[];
   history: HistoryEntry[];
+  orders: Order[];
   currentUser: User;
   isDemoMode: boolean;
+
+  updateOrderStatus: (id: string, status: OrderStatus) => void;
 
   addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateProduct: (id: string, product: Partial<Product>) => void;
