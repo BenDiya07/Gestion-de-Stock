@@ -1407,4 +1407,98 @@ update public.categories set slug = 'photogrey'
 update public.categories set slug = 'soleil'
  where slug is null and lower(name) like '%soleil%';
 update public.categories set slug = 'accessoires'
- where slug is null and (lower(name) like '%accessoire%' or lower(name) like '%étui%' or lower(name) like '%etui%');
+  where slug is null and (lower(name) like '%accessoire%' or lower(name) like '%étui%' or lower(name) like '%etui%');
+
+-- -----------------------------------------------------------------------------
+-- 9. Correctif allocation du stock des commandes en ligne (20261127000002)
+--    Prélèvement dans les boutiques disposant réellement du stock, et
+--    restitution exacte (produit + boutique) lors d'une annulation.
+-- -----------------------------------------------------------------------------
+create or replace function public.on_order_status_change()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare
+  r  public.order_items%rowtype;
+  b  record;
+  v_remaining int;
+  v_alloc     int;
+  v_primary   uuid;
+  v_dispatch  uuid;
+begin
+  select id into v_dispatch
+    from public.stores
+   where is_dispatch_center
+   order by created_at
+   limit 1;
+
+  if new.status in ('confirmed', 'preparing', 'shipped', 'delivered')
+     and old.stock_applied = false then
+
+    for r in
+      select *
+        from public.order_items
+       where order_id = new.id
+         and product_id is not null
+    loop
+      v_remaining := r.quantity;
+
+      for b in
+        select s.store_id, s.quantity as available
+          from public.stock_by_store s
+         where s.product_id = r.product_id
+           and s.quantity > 0
+         order by (s.store_id = v_dispatch) desc, s.quantity desc, s.store_id
+      loop
+        v_alloc := least(b.available, v_remaining);
+
+        if v_primary is null then
+          v_primary := b.store_id;
+        end if;
+
+        insert into public.stock_movements (product_id, store_id, quantity, reason, reference_id)
+        values (r.product_id, b.store_id, -v_alloc, 'sale', new.id);
+
+        v_remaining := v_remaining - v_alloc;
+        exit when v_remaining = 0;
+      end loop;
+
+      if v_remaining > 0 then
+        raise exception 'Stock insuffisant pour le produit %.', r.product_id;
+      end if;
+    end loop;
+
+    update public.orders
+       set stock_applied = true,
+           store_id = coalesce(v_primary, v_dispatch, old.store_id)
+     where id = new.id;
+
+    return new;
+  end if;
+
+  if new.status = 'cancelled'
+     and old.status <> 'cancelled'
+     and old.stock_applied = true then
+
+    for b in
+      select product_id, store_id, -quantity as qty
+        from public.stock_movements
+       where reference_id = new.id
+         and reason = 'sale'
+         and quantity < 0
+       order by created_at
+    loop
+      insert into public.stock_movements (product_id, store_id, quantity, reason, reference_id)
+      values (b.product_id, b.store_id, b.qty, 'adjustment', new.id);
+    end loop;
+
+    update public.orders set stock_applied = false where id = new.id;
+    return new;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_order_status_change on public.orders;
+create trigger trg_order_status_change
+after update of status on public.orders
+for each row execute function public.on_order_status_change();
